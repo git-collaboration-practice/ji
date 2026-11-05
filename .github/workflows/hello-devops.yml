@@ -1,0 +1,23 @@
+# 워크플로우 전체의 이름을 지정합니다.
+name: First CI Automation
+
+# 트리거 조건을 정의합니다: main 브랜치에 push 이벤트가 일어날 때 실행
+on:
+  push:
+    branches: [ "main" ]
+
+# 실행할 작업을 정의합니다.
+jobs:
+  print-hello-job:
+    # 실행 환경으로 가상 우분투 최신 버전을 선택합니다.
+    runs-on: ubuntu-latest
+
+    # 작업 내부에서 차례대로 실행할 단계들입니다.
+    steps:
+      # 1단계: 레포지토리의 코드를 가상 머신으로 가져옵니다.
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2단계: 터미널 스크립트를 사용하여 메시지를 출력합니다.
+      - name: Print Welcome Message
+        run: echo "Hello, DevOps World"
