@@ -14,11 +14,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout Website Source
-        uses: actions/checkout@v4
-        with:
-        repository: s3458600-ui/creativity
-        path: website
 
       # 2. SSH 인증 준비
       - name: Set up SSH key
