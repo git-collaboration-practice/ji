@@ -5,8 +5,8 @@ name: Deploy Todo App (Web & WAS)
 
 on:
   push:
-    branches: 
-     -feature/web-was
+    branches:
+      - feature/web-was
   workflow_dispatch:
 
 jobs:
