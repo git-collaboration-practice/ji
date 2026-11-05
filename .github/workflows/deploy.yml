@@ -25,8 +25,7 @@ jobs:
           script: |
             echo "=== 배포 시작 ==="
             # 프로젝트 디렉토리로 이동 (없으면 생성)
-            mkdir -p ~/vanilla-web
-            cd ~/vanilla-web
+            cd ~/ji
             
             # 실습 편의상 기존 코드를 지우고 GitHub 최신 소스를 가져오거나 배포 처리를 합니다.
             # (만약 서버 내에 git 설정이 되어있다면 git pull 실행)
