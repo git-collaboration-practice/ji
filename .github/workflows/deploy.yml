@@ -1,49 +1,75 @@
 
-name: Deploy Static Site
+
+name: Vanilla Web Server Continuous Deployment
 
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-to-server:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. GitHub 코드 다운로드
-      - name: Checkout
+      # 1. GitHub Actions 실행 환경에 소스코드 다운로드
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      # 2. SSH로 카카오클라우드 Ubuntu 서버에 접속
+      - name: Deploy to Remote Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
 
-      # 2. SSH 인증 준비
-      - name: Set up SSH key
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
-          chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
+          # 3. 원격 서버에서 실행할 배포 스크립트
+          script: |
+            set -e
 
-      # 3. 정적 웹사이트 전송
-      - name: Deploy via rsync
-        env:
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-        run: |
-          rsync -avz --delete \
-            -e "ssh -i $HOME/.ssh/id_deploy -o IdentitiesOnly=yes" \
-            site/ \
-            "$REMOTE_USER@$REMOTE_HOST:/home/ubuntu/www/"
+            echo "=== 배포 시작 ==="
 
-      # 4. Nginx 재시작
-      - name: Restart nginx
-        env:
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-        run: |
-          ssh -i ~/.ssh/id_deploy \
-            -o IdentitiesOnly=yes \
-            "$REMOTE_USER@$REMOTE_HOST" \
-            "sudo -n nginx -t && sudo -n systemctl restart nginx && curl -fsSI http://127.0.0.1/"
+            # 프로젝트 디렉터리 생성
+            mkdir -p ~/creativity
+            mkdir -p /home/ubuntu/www
+
+            # GitHub 정적 웹사이트 소스코드 다운로드
+            if [ -d ~/creativity/.git ]; then
+              echo "=== 기존 GitHub 저장소 업데이트 ==="
+              cd ~/creativity
+              git pull --ff-only
+            else
+              echo "=== GitHub 저장소 Clone ==="
+              git clone https://github.com/s3458600-ui/creativity.git ~/creativity
+            fi
+
+            # 웹사이트 파일 확인
+            cd ~/creativity
+            test -f index.html
+
+            # 최신 웹사이트 파일 배포
+            echo "=== 웹사이트 파일 배포 ==="
+            rsync -av --delete \
+              --exclude '.git' \
+              --exclude '.github' \
+              --exclude '.gitignore' \
+              --exclude 'README.md' \
+              ~/creativity/ /home/ubuntu/www/
+
+            # Nginx 설정 검사 및 재시작
+            echo "=== Nginx 재시작 ==="
+            sudo -n nginx -t
+            sudo -n systemctl restart nginx
+
+            # 배포된 파일 확인
+            echo "=== 배포 파일 확인 ==="
+            ls -la /home/ubuntu/www
+
+            # 웹서버 응답 확인
+            echo "=== 웹서버 상태 확인 ==="
+            curl -fsSI http://127.0.0.1/
+
+            echo "=== 원격 서버 배포 성공 완료! ==="
+            uptime
