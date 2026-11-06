@@ -23,8 +23,8 @@ jobs:
       - name: Delivery HTML to Web Server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.WEB_SERVER_HOST }}
-          username: ${{ secrets.WEB_SERVER_USER }}
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
 
