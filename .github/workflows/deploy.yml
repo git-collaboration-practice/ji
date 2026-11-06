@@ -55,7 +55,7 @@ jobs:
 
             # 최초 배포 시 저장소 Clone
             if [ ! -d /home/ubuntu/todo-app/.git ]; then
-              git clone -b main \
+              git clone -b feature/web-was \
                 https://github.com/git-collaboration-practice/ji.git \
                 /home/ubuntu/todo-app
             fi
@@ -63,8 +63,8 @@ jobs:
             # 최신 GitHub 소스코드 가져오기
             cd /home/ubuntu/todo-app
 
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin feature/web-was
+            git checkout -B feature/web-was origin/feature/web-was
 
             # Flask 프로젝트 이동
             cd was
